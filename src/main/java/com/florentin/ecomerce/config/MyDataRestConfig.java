@@ -49,7 +49,7 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
     }
 
     /**
-     * I need to understand this
+     * I need to understand this... or not...
      */
     private void exposeIds(RepositoryRestConfiguration config) {
         //expose entity ids
