@@ -1,5 +1,7 @@
 package com.florentin.ecomerce.config;
 
+import com.florentin.ecomerce.entity.Country;
+import com.florentin.ecomerce.entity.County;
 import com.florentin.ecomerce.entity.Product;
 import com.florentin.ecomerce.entity.ProductCategory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,19 +35,21 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 
         HttpMethod[] theUnsupportedActions = {HttpMethod.PUT, HttpMethod.POST, HttpMethod.DELETE};
         // disable HTTP methods for Product: PUT, POST and DELETE
-        config.getExposureConfiguration()
-                .forDomainType(Product.class)
-                .withItemExposure(((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions)))
-                .withCollectionExposure(((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions)));
+        disableHttpMethods(config, theUnsupportedActions, Product.class);
+        disableHttpMethods(config, theUnsupportedActions, ProductCategory.class);
+        disableHttpMethods(config, theUnsupportedActions, Country.class);
+        disableHttpMethods(config, theUnsupportedActions, County.class);
 
-        // disable HTTP methods for ProductCategory: PUT, POST and DELETE
-        config.getExposureConfiguration()
-                .forDomainType(ProductCategory.class)
-                .withItemExposure(((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions)))
-                .withCollectionExposure(((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions)));
 
         //call an internal helper method
         exposeIds(config);
+    }
+
+    private void disableHttpMethods(RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions,Class theClass) {
+        config.getExposureConfiguration()
+                .forDomainType(theClass)
+                .withItemExposure(((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions)))
+                .withCollectionExposure(((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions)));
     }
 
     /**
