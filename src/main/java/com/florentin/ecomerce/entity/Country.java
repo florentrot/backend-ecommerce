@@ -21,7 +21,7 @@ public class Country {
     private String code;
     @Column(name="name")
     private String name;
-    @OneToMany(mappedBy = "country")
+    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL) //aici
     @JsonIgnore
     private List<County> county;
 }

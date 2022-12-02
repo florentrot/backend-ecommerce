@@ -17,7 +17,7 @@ public class County {
     @Column(name = "name")
     private String name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL) //aici
     @JoinColumn(name = "country_id")
     private Country country;
 
