@@ -31,7 +31,7 @@ public class Order {
     private String status;
     @Column(name = "date_created")
     @CreationTimestamp
-    private Date dateCrated;
+    private Date dateCreated;
     @Column(name = "last_updated")
     @UpdateTimestamp
     private Date lastUpdated;
