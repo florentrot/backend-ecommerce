@@ -1,24 +1,31 @@
 package com.florentin.ecomerce.service;
 
 import com.florentin.ecomerce.dao.CustomerRepository;
+import com.florentin.ecomerce.dto.PaymentInfo;
 import com.florentin.ecomerce.dto.Purchase;
 import com.florentin.ecomerce.dto.PurchaseResponse;
 import com.florentin.ecomerce.entity.Customer;
 import com.florentin.ecomerce.entity.Order;
 import com.florentin.ecomerce.entity.OrderItem;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService{
 
     private CustomerRepository customerRepository;
 
-    public CheckoutServiceImpl(CustomerRepository customerRepository) {
+    public CheckoutServiceImpl(CustomerRepository customerRepository,
+                               @Value("${stripe.key.secret}") String secretKey) {
         this.customerRepository = customerRepository;
+        //initialize Stripe API with secret key
+        Stripe.apiKey=secretKey;
     }
 
     @Override
@@ -28,7 +35,7 @@ public class CheckoutServiceImpl implements CheckoutService{
         Order order = purchase.getOrder();
 
         //generate tracking number
-        String orderTrackingNumber = generateOrderTrackingNUmber();
+        String orderTrackingNumber = generateOrderTrackingNumber();
         order.setOrderTrackingNumber((orderTrackingNumber));
 
         //populate order with orderItems
@@ -41,6 +48,14 @@ public class CheckoutServiceImpl implements CheckoutService{
 
         // populate customer with order
         Customer customer = purchase.getCustomer();
+
+        // check if this is an existing customer
+        String theEmail = customer.getEmail();
+        Customer customerFromDB = customerRepository.findByEmail(theEmail);
+        if(customerFromDB !=null){
+            customer=customerFromDB;
+        }
+
         customer.add(order);
 
         // save to the database
@@ -50,7 +65,21 @@ public class CheckoutServiceImpl implements CheckoutService{
         return  new PurchaseResponse(orderTrackingNumber);
     }
 
-    private String generateOrderTrackingNUmber() {
+    @Override
+    public PaymentIntent createPaymentIntent(PaymentInfo paymentInfo) throws StripeException {
+        List<String> paymentMethodType = new ArrayList<>();
+        paymentMethodType.add("card");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amount", paymentInfo.getAmount());
+        params.put("currency", paymentInfo.getCurrency());
+        params.put("payment_method_types", paymentMethodType);
+        params.put("description", "Florentin purchase");
+        params.put("receipt_email", paymentInfo.getReceiptEmail());
+        return PaymentIntent.create(params);
+    }
+
+    private String generateOrderTrackingNumber() {
         // generate a random UUID number (UUID version-4)
         return UUID.randomUUID().toString();
 
