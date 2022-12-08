@@ -28,6 +28,7 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 
     @Autowired
     public MyDataRestConfig(EntityManager theEntityManager) {
+
         this.entityManager=theEntityManager;
     }
 
